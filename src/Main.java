@@ -7,7 +7,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Main extends Application {
 
@@ -64,20 +68,35 @@ public class Main extends Application {
             return;
         }
 
+        String searchPhrase = searchField.getText();
         StringBuilder results = new StringBuilder();
-        listFilesInDirectory(directory, results);
+        searchInDirectory(directory, results, searchPhrase);
         resultArea.setText(results.toString());
     }
 
-    private void listFilesInDirectory(File directory, StringBuilder results) {
+    private void searchInDirectory(File directory, StringBuilder results, String searchPhrase) {
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
-                if (file.isFile()) {
+                if (file.isFile() && containsPhrase(file, searchPhrase)) {
                     results.append(file.getName()).append("\n");
                 }
             }
         }
+    }
+
+    private boolean containsPhrase(File file, String searchPhrase) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(searchPhrase)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static void main(String[] args) {
